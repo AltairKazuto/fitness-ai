@@ -10,8 +10,10 @@ const selectedSong = ref<File | undefined | null>()
 const currentPrediction = ref<number | undefined>()
 const timer = ref(0)
 const prevTimer = ref<number>(0)
-const beatShow = ref('')
 const poses = ['goddess pose', 'plank pose', 'tree pose', 'warrior2 pose']
+const score = ref(0)
+const added = ref(0)
+const accuracy = ref('')
 
 const incrementTimer = () => {
   if (beatsObject.beats[0]) {
@@ -49,14 +51,6 @@ const handleFileChange = (event: Event) => {
   }
 }
 
-watch(results, (newVal: Array<number>, oldVal) => {
-  if (newVal[1] == currentPrediction.value) {
-    console.log('right')
-  } else {
-    console.log('wrong')
-  }
-})
-
 const incomingBeats = computed(() => {
   let incoming: Array<Array<number>> = []
   beatsObject.beats.forEach((beat, index: number) => {
@@ -78,13 +72,30 @@ const beatDetected = computed(() => {
   return false
 })
 
+watch(results, (newVal: Array<number>, oldVal) => {
+  if (newVal[1] == currentPrediction.value) {
+    added.value = Math.floor(200 * newVal[0]!)
+    if (newVal[0]! > 0.98) {
+      accuracy.value = 'Perfect'
+    } else if (newVal[0]! > 0.9) {
+      accuracy.value = 'Amazing'
+    } else if (newVal[0]! > 0.75) {
+      accuracy.value = 'Nice'
+    } else {
+      accuracy.value = 'Good'
+    }
+  } else {
+    added.value = 50
+    accuracy.value = 'Miss'
+  }
+  score.value += added.value
+})
+
 watch(beatDetected, (newVal, oldVal) => {
   if (newVal) {
-    beatShow.value += 'a'
     snapshot()
     prevTimer.value = beatsObject.beats.shift()!
     currentPrediction.value = beatsObject.pose.shift()
-    console.log(timer.value, prevTimer.value)
   }
 })
 
@@ -110,7 +121,15 @@ watch(
 </script>
 
 <template>
+  <div style="position: absolute; right: 50px">
+    <h1>Score: {{ score }} + {{ added }}</h1>
+    <h1>{{ accuracy }}</h1>
+  </div>
+
   <audio ref="audio_ref"></audio>
+  <p style="position: absolute; left: 50%; top: 52%; transform: translate(-50%, 0%)">
+    ^^^ Center here ^^^
+  </p>
   <div v-for="beat in incomingBeats">
     <p
       :style="{
@@ -141,6 +160,7 @@ watch(
     ></camera>
   </div>
   <input type="file" accept="audio/*" @change="handleFileChange" />
+
   <p>Class: {{ results[1] }}</p>
   <p>Confidence: {{ results[0] }}</p>
   <button @click="snapshot">snapshot</button>
