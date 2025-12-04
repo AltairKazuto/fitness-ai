@@ -1,0 +1,162 @@
+import psycopg2
+from psycopg2 import sql
+from psycopg2 import extras
+import time
+import bcrypt
+
+
+# still being fixed
+DB_CONFIG = {
+    "host": "db.aeraqhjqallyybuttqpg.supabase.co",
+    "database": "postgres",
+    "user": "postgres",
+    "password": "CS176_fitness176",
+    "port": 5433
+}
+
+
+class DBConnector:
+    def __init__(self):
+        self.connection = None
+
+    def connect(self, max_retries=5):
+        for attempt in range(max_retries):
+            try:
+                # Use DSN parameters from the configuration dictionary
+                self.connection = psycopg2.connect(**DB_CONFIG)
+                print("Successfully connected to PostgreSQL database.")
+                return True
+            except psycopg2.Error as e:
+                print(f"Connection attempt {attempt + 1} failed: {e}")
+                if attempt < max_retries - 1:
+                    # Exponential backoff: 2^attempt seconds delay
+                    wait_time = 2 ** attempt
+                    print(f"Retrying in {wait_time} seconds...")
+                    time.sleep(wait_time)
+                else:
+                    print("Max retries reached. Could not connect to the database.")
+                    return False
+        return False
+
+    def close(self):
+        if self.connection:
+            self.connection.close()
+            print("PostgreSQL connection closed.")
+
+    def execute_query(self, query, params=None, fetch_one=False, fetch_all=False):
+        """
+        :param query: The SQL query string (should use %s placeholders).
+        :param params: A tuple or list of parameters to substitute for placeholders.
+        :param fetch_one: Boolean to fetch only one result row.
+        :param fetch_all: Boolean to fetch all result rows.
+        :return: None, a single row (tuple), or a list of rows (list of tuples).
+        """
+        if not self.connection:
+            if not self.connect():
+                return None
+        
+        try:
+            with self.connection.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+                cursor.execute(query, params)
+
+                # If the query modifies data
+                if query.strip().upper().startswith(('INSERT', 'UPDATE', 'DELETE', 'CREATE', 'DROP')):
+                    self.connection.commit()
+
+                    # If INSERT has RETURNING clause
+                    if query.strip().upper().startswith('INSERT') and 'RETURNING' in query.upper():
+                        return dict(cursor.fetchone()) if cursor.rowcount else None
+                    # For UPDATE/DELETE, return number of affected rows
+                    elif query.strip().upper().startswith(('UPDATE', 'DELETE')):
+                        return cursor.rowcount
+
+                # If fetching data
+                if fetch_one:
+                    return dict(cursor.fetchone()) if cursor.rowcount else None
+                elif fetch_all:
+                    return [dict(row) for row in cursor.fetchall()]
+
+                # Default return for non-fetch queries without RETURNING
+                return None
+        
+        except psycopg2.Error as e:
+            print(f"Database error executing query: {e}")
+            self.connection.rollback() 
+            return None
+        
+    def signup(self, username, pw):
+        hashed = bcrypt.hashpw(pw.encode('utf-8'), bcrypt.gensalt())
+        query = "INSERT INTO users (username, password) VALUES (%s, %s)"        
+        try:
+            # fetch_one=True ensures it returns the inserted row
+            user = self.execute_query(query, (username, hashed.decode('utf-8')), fetch_one=True)
+            if user:
+                print(f"User '{username}' registered successfully!")
+                return user
+            else:
+                # Should not normally happen
+                return False
+        except psycopg2.IntegrityError:
+            # Duplicate username or constraint violation
+            if self.connection:
+                self.connection.rollback()
+            print("Signup failed: username already exists!")
+            return False
+        except psycopg2.Error as e:
+            # Other database errors
+            if self.connection:
+                self.connection.rollback()
+            print(f"Signup failed: {e}")
+            return False
+        
+    def login(self, username, pw):
+        query = "SELECT * FROM users WHERE username = %s"
+        try:
+            user = self.execute_query(query, (username,), fetch_one=True)
+            if user:
+                stored_hash = user['password'].encode('utf-8')
+                if bcrypt.checkpw(pw.encode('utf-8'), stored_hash):
+                    print(f"Login successful for user '{username}'!")
+                    return user  # Return the full user info as dict
+                else:
+                    print("Login failed: Incorrect password.")
+                    return None
+            else:
+                print("Login failed: Username not found.")
+                return None
+        except psycopg2.Error as e:
+            if self.connection:
+                self.connection.rollback()
+            print(f"Login failed: {e}")
+            return None
+        
+    
+if __name__ == '__main__':
+
+    # edit accordingly
+    # this is just to test
+    DB_CONFIG['host'] = 'localhost' 
+    DB_CONFIG['user'] = 'postgres'
+    DB_CONFIG['password'] = 'shaira'
+    DB_CONFIG['port'] = 5433
+    DB_CONFIG['database'] = 'workout_tracker'
+    
+    db = DBConnector()
+    if db.connect():
+        # db.connect()
+        
+        # Example of inserting data
+        # insert_query = "INSERT INTO users (user_id, username, password) VALUES (%s, %s, %s)"
+        # db.execute_query(insert_query, (1, 'yesss', 'fffsdfsdf'))
+        # print("Data inserted.")
+        
+        # # Example of querying data
+        # select_query = "SELECT * FROM users WHERE user_id = %s"
+        # data = db.execute_query(select_query, (1,), fetch_all=True)
+        # print("Fetched Data:", data)
+
+        print(db.signup("macncheese2", "passpass"))
+        print(db.login("macncheese2", "passpass"))
+        print(db.login("macncheese", "passpass"))
+        
+        db.close()
