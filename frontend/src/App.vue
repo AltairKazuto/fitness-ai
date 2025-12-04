@@ -1,33 +1,23 @@
-<template>
-  <div id="app">
-    <!-- Navigation -->
-    <nav>
-      <router-link to="/">Home</router-link>
-      |
-      <router-link to="/dashboard">Dashboard</router-link>
-    </nav>
-
-    <!-- Where the routed component will appear -->
-    <router-view />
-  </div>
-</template>
 
 <script setup lang="ts">
-// No need to import Home/Dashboard here
-// The router handles which component to show
-</script>
+import { RouterLink, RouterView } from 'vue-router'
+import { reactive } from 'vue'
+import { useSocketIO } from './WebSocket'
 
-<style>
-nav {
-  margin-bottom: 20px;
-}
-nav a {
-  text-decoration: none;
-  color: blue;
-  margin-right: 10px;
-}
-nav a.router-link-exact-active {
-  font-weight: bold;
-  color: darkblue;
-}
-</style>
+const { data, status, dailyLogs, results, beatsObject, sendEvent } = useSocketIO('http://localhost:5000') // Use http or https here for Socket.IO
+</script>
+<template>
+  <!--  <div class="flex flex-col h-dvh w-dvw bg-zinc-950 text-white">
+-->
+  <RouterView v-slot="{ Component }">
+    <component
+      :is="Component"
+      :results="results"
+      :dailyLogs="dailyLogs"
+      :beatsObject="beatsObject"
+      @event="(event: string, data: any) => sendEvent(event, data)"
+    />
+  </RouterView>
+  <!--  </div>
+--></template>
+

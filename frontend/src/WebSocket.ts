@@ -1,7 +1,20 @@
 import { ref, reactive, onMounted, onUnmounted } from 'vue'
 import { io, Socket } from 'socket.io-client' // Import the specific 'io' function
+import useAuth from './auth'
+
+const { state } = useAuth()
 
 export function useSocketIO(url: string) {
+  interface DailyLog {
+    id: number
+    user_id: number
+    log_date: string
+    goal_points: number
+    earned_points: number
+    is_goal_met: boolean
+  }
+
+  const dailyLogs = ref<DailyLog[]>([])
   const socket = ref<Socket | null>(null)
   const data = ref<string | null>(null)
   const results = ref([])
@@ -28,6 +41,20 @@ export function useSocketIO(url: string) {
       console.log('Socket.IO disconnected')
     })
 
+    socket.value.on('logged-in', (message: number) => {
+      if (message) {
+        state.authenticated = true
+        state.user = message
+      }
+    })
+
+    socket.value.on('registered', (message: number) => {
+      if (message) {
+        state.authenticated = true
+        state.user = message
+      }
+    })
+
     socket.value.on('error', (err: Error) => {
       status.value = 'ERROR'
       console.error('Socket.IO error:', err)
@@ -36,6 +63,11 @@ export function useSocketIO(url: string) {
     socket.value.on('send_results', (message: any) => {
       results.value = message
       console.log('results', message)
+    })
+
+    socket.value.on('send_logs', (message: any) => {
+      dailyLogs.value = message
+      console.log(dailyLogs.value)
     })
 
     socket.value.on('send_beats', (message: any) => {
@@ -73,5 +105,5 @@ export function useSocketIO(url: string) {
   onUnmounted(close)
 
   // Expose the sendEvent function
-  return { socket, data, results, beatsObject, status, sendEvent, close, connect }
+  return { socket, data, dailyLogs, results, beatsObject, status, sendEvent, close, connect }
 }

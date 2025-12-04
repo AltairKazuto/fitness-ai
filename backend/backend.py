@@ -1,4 +1,5 @@
 from flask import Flask
+from datetime import date
 from flask_socketio import SocketIO, emit
 from ultralytics import YOLO
 import cv2
@@ -6,6 +7,7 @@ import base64
 import time
 import numpy as np
 from beat_detection import simple
+import database
 from PIL import Image
 from io import BytesIO
 import os
@@ -14,7 +16,55 @@ weights_path = os.path.join(os.getcwd(), "yoga_pose_classifier_v4", "weights", "
 app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins="*", max_http_buffer_size=1e8)
 
-model = YOLO(weights_path)
+
+DB = {
+    "host": "localhost",
+    "database": "workout_tracker1",
+    "user": "postgres",
+    "password": "shaira",
+    "port": 5433
+}
+DB['host'] = 'localhost' 
+DB['user'] = 'postgres'
+DB['password'] = 'shaira'
+DB['port'] = 5433
+DB['database'] = 'workout_tracker1'
+
+db = database.DBConnector()
+db.create_database_if_not_exists(DB['database'], DB['user'], DB['password'], DB['port'])
+db.connect()
+
+model = YOLO('yoga_pose_classifier_v4/weights/best.pt')
+
+
+@socketio.on("login")
+def login(message):
+    id = db.login(message['username'], message['password'])
+    emit("logged-in", id)
+
+@socketio.on("register")
+def register(message):
+    id = db.signup(message['username'], message['password'])
+    emit("registered", id)
+
+@socketio.on("add_points")
+def add_points(message):
+    print('b')
+    db.add_points(message['id'], message['add'])
+
+@socketio.on("get_logs")
+def add_points(message):
+    print('here')
+    logs = db.get_daily_logs_by_user(message['id'])
+    for log in logs:
+        log["log_date"] = log["log_date"].strftime("%Y-%m-%d")
+
+    emit('send_logs', logs)
+
+@socketio.on("get_earned")
+def get_earned(message):
+    query = " b"
+    db.add_points(message['id'], message['add'])
 
 @socketio.on("request_beats")
 def request_beats(message):
@@ -55,4 +105,12 @@ def classify_pose(message):
 	emit("send_results", [float(highest_conf), highest_class_idx])
 
 if __name__ == "__main__":
+    # if db.connect():
+    #     db.init_db() # initialize database if new app
+
+    #     print(db.signup("macncheese2", "passpass"))
+    #     the_user = db.login("macncheese2", "passpass")
+    #     db.add_points(the_user, 230)
+        
+    #     db.close()
     socketio.run(app, host="0.0.0.0", port=5000)

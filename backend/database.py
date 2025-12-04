@@ -9,24 +9,20 @@ import bcrypt
 
 # still being fixed
 DB_CONFIG = {
-    "host": "db.aeraqhjqallyybuttqpg.supabase.co",
-    "database": "postgres",
+    "host": "localhost",
+    "database": "workout_tracker1",
     "user": "postgres",
-    "password": "CS176_fitness176",
-    "port": 5432
+    "password": "shaira",
+    "port": 5433
 }
 
-DB_CONFIG['host'] = 'localhost' 
-DB_CONFIG['user'] = 'postgres'
-DB_CONFIG['password'] = 'shaira'
-DB_CONFIG['port'] = 5433
-DB_CONFIG['database'] = 'workout_tracker1'
 
 class DBConnector:
     def __init__(self):
         self.connection = None
 
-    def create_database_if_not_exists(self, dbname, user, password, host='localhost', port=5433):
+
+    def create_database_if_not_exists(self, dbname, user, password, port, host='localhost' ):
         conn = psycopg2.connect(dbname='postgres', user=user, password=password, host=host, port=port)
         conn.autocommit = True  # Needed to create databases
         cur = conn.cursor()
@@ -148,10 +144,12 @@ class DBConnector:
         query = "INSERT INTO users (username, password) VALUES (%s, %s)"        
         try:
             # fetch_one=True ensures it returns the inserted row
-            user = self.execute_query(query, (username, hashed.decode('utf-8')), fetch_one=True)
+
+            user = self.execute_query(query, (username, hashed.decode('utf-8')), fetch_one=False)
             if user:
                 print(f"User '{username}' registered successfully!")
-                return user
+                return user['user_id']
+
             else:
                 # Should not normally happen
                 return False
@@ -245,6 +243,7 @@ class DBConnector:
         return self.execute_query(query, (user_id,), fetch_all=True)
         
     
+
 # if __name__ == '__main__':
 
 #     # edit accordingly
@@ -252,11 +251,11 @@ class DBConnector:
 #     DB_CONFIG['host'] = 'localhost' 
 #     DB_CONFIG['user'] = 'postgres'
 #     DB_CONFIG['password'] = 'shaira'
-#     DB_CONFIG['port'] = 5433
+#     DB_CONFIG['port'] = 5432
 #     DB_CONFIG['database'] = 'workout_tracker1'
     
 #     db = DBConnector()
-#     db.create_database_if_not_exists(DB_CONFIG['database'], DB_CONFIG['user'], DB_CONFIG['password'])
+#     db.create_database_if_not_exists(DB_CONFIG['database'], DB_CONFIG['user'], DB_CONFIG['password'], DB_CONFIG['port'])
 #     if db.connect():
 #         db.init_db() # initialize database if new app
 
@@ -265,4 +264,3 @@ class DBConnector:
 #         db.add_points(the_user, 230)
         
 #         db.close()
-

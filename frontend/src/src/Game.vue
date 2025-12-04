@@ -14,6 +14,9 @@ const poses = ['goddess pose', 'plank pose', 'tree pose', 'warrior2 pose']
 const score = ref(0)
 const added = ref(0)
 const accuracy = ref('')
+const targetBarLit = ref(false); 
+
+
 
 const incrementTimer = () => {
   if (beatsObject.beats[0]) {
@@ -94,8 +97,13 @@ watch(results, (newVal: Array<number>, oldVal) => {
 watch(beatDetected, (newVal, oldVal) => {
   if (newVal) {
     snapshot()
+    targetBarLit.value = true;
     prevTimer.value = beatsObject.beats.shift()!
     currentPrediction.value = beatsObject.pose.shift()
+
+    setTimeout(() => {
+      targetBarLit.value = false;
+    }, 500); 
   }
 })
 
@@ -121,47 +129,54 @@ watch(
 </script>
 
 <template>
+    <div class="min-h-screen bg-gray-900 text-white flex flex-col items-center p-4 relative">
   <div style="position: absolute; right: 50px">
     <h1>Score: {{ score }} + {{ added }}</h1>
-    <h1>{{ accuracy }}</h1>
   </div>
 
   <audio ref="audio_ref"></audio>
   
 
-  <div class="camera-container">
-    <camera
-      style="{width: 640px, height: 480px}"
-      :resolution="{ width: 1280, height: 720 }"
-      ref="camera_ref"
-      :autoplay="true"
-      :playsinline="true"
-      :constraints="{
-        video: {
-          width: { ideal: 1280 }, // Lowering resolution can sometimes enable higher FPS
-          height: { ideal: 720 },
-          frameRate: { ideal: 60 }, // Request 60 FPS
-        },
-      }"
-    ></camera>
-  </div>
+ <div class="camera-container" ref="container_ref">
+  <camera
+    style="{width: 640px, height: 480px}"
+    :resolution="{ width: 1280, height: 720 }"
+    ref="camera_ref"
+    :autoplay="true"
+    :playsinline="true"
+    :constraints="{
+      video: {
+        width: { ideal: 1280 },
+        height: { ideal: 720 },
+        frameRate: { ideal: 60 },
+      },
+    }"
+  ></camera>
 
-    <div v-for="beat in incomingBeats">
+  
+
+  <div
+    class="center-bar"
+    :class="{ 'lit': targetBarLit }"
+  ></div>
+<h1 v-if="targetBarLit" class="floating-accuracy">  {{ accuracy }}
+</h1>
+
+  <div v-for="beat in incomingBeats" :key="beat[0]">
     <p
       :style="{
         position: 'absolute',
-        top: '50%',
-        left: '50%',
-        'margin-left': (beat[0]! - timer) * 500 + 'px',
+        top: '90%',
+        left: `${(1280 / 2) + (beat[0]! - timer) * 500}px`, 
+        transform: 'translate(-50%, -50%)',
+        color: 'blue',
+        fontWeight: 'bold',
       }"
     >
       {{ poses[beat[1]!] }}
     </p>
   </div>
-
-  <p style="position: absolute; left: 50%; top: 52%; transform: translate(-50%, 0%)">
-    ^^^ Center here ^^^
-  </p>
+</div>
   <input type="file" accept="audio/*" @change="handleFileChange" />
 
 
@@ -169,7 +184,8 @@ watch(
   <p>Confidence: {{ results[0] }}</p>
   <button @click="snapshot">snapshot</button>
   <button @click="request_beats">Request Beats</button>
-  <img :src="url" />
+  <!-- <img :src="url" /> -->
+   </div>
 </template>
 
 <style scoped>
@@ -184,4 +200,62 @@ watch(
   height: 100%;
   object-fit: cover;
 }
+
+.center-bar {
+  position: absolute;
+  top: 90%;
+  left: 50%;
+  width: 300px;
+  height: 20px;
+  transform: translate(-50%, -50%);
+  border-radius: 10px;
+  background: linear-gradient(90deg, #f5f5f5, #fcfdfd, #ececec);
+  opacity: 0.2;
+  box-shadow: 0 0 10px #02fff2, 0 0 20px #02fff2, 0 0 30px #02fff2;
+  transition: opacity 0.1s, box-shadow 0.1s;
+}
+
+.center-bar.lit {
+  opacity: 1;
+  /* Neon glow layers */
+  box-shadow:
+    0 0 5px #02fff2,
+    0 0 10px #02fff2,
+    0 0 20px #02fff2,
+    0 0 40px #02fff2,
+    0 0 80px #02fff2,
+    0 0 120px #02fff2;
+  animation: neon-pulse 0.3s ease-in-out;
+}
+
+@keyframes neon-pulse {
+  0% { box-shadow: 0 0 5px #02fff2, 0 0 10px #02fff2, 0 0 20px #02fff2; }
+  50% { box-shadow: 0 0 30px #02fff2, 0 0 60px #02fff2, 0 0 120px #02fff2; }
+  100% { box-shadow: 0 0 5px #02fff2, 0 0 10px #02fff2, 0 0 20px #02fff2; }
+}
+
+.floating-accuracy {
+  position: absolute;
+  top: 30%;
+  left: 80%;
+  transform: translate(-50%, -50%);
+  color: #0ff;
+  font-weight: bold;
+  font-size: 40px;
+  text-shadow: 0 0 5px #0ff, 0 0 10px #0ff, 0 0 20px #0ff;
+  animation: floatFade 0.8s ease-out forwards;
+}
+
+@keyframes floatFade {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -150%);
+  }
+}
 </style>
+
+
