@@ -7,11 +7,11 @@ const { data, status, results, beatsObject, sendEvent } = useSocketIO('http://lo
 const camera_ref = ref<InstanceType<typeof Camera>>()
 const audio_ref = ref<HTMLAudioElement | undefined | null>()
 const selectedSong = ref<File | undefined | null>()
-const currentPrediction = ref<string | undefined>('')
+const currentPrediction = ref<number | undefined>()
 const timer = ref(0)
 const prevTimer = ref<number>(0)
 const beatShow = ref('')
-const poses = ['goddess pose', 'plank pose', 'warrior2 pose', 'last pose']
+const poses = ['goddess pose', 'plank pose', 'tree pose', 'warrior2 pose']
 
 const incrementTimer = () => {
   if (beatsObject.beats[0]) {
@@ -49,8 +49,12 @@ const handleFileChange = (event: Event) => {
   }
 }
 
-watch(results, (newVal: Array<string>, oldVal) => {
-  currentPrediction.value = newVal[0]
+watch(results, (newVal: Array<number>, oldVal) => {
+  if (newVal[1] == currentPrediction.value) {
+    console.log('right')
+  } else {
+    console.log('wrong')
+  }
 })
 
 const incomingBeats = computed(() => {
@@ -77,8 +81,9 @@ const beatDetected = computed(() => {
 watch(beatDetected, (newVal, oldVal) => {
   if (newVal) {
     beatShow.value += 'a'
+    snapshot()
     prevTimer.value = beatsObject.beats.shift()!
-    beatsObject.pose.shift()
+    currentPrediction.value = beatsObject.pose.shift()
     console.log(timer.value, prevTimer.value)
   }
 })
@@ -138,10 +143,6 @@ watch(
   <input type="file" accept="audio/*" @change="handleFileChange" />
   <p>Class: {{ results[1] }}</p>
   <p>Confidence: {{ results[0] }}</p>
-  <!--  <p :style="{ top: '50%', left: '50%', 'margin-left': timer * 100 + 'px' }">
-    BeatDetect: {{ beatShow }}
-  </p>
--->
   <button @click="snapshot">snapshot</button>
   <button @click="request_beats">Request Beats</button>
   <img :src="url" />

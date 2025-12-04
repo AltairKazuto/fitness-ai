@@ -34,7 +34,7 @@ def classify_pose(message):
 
 
 	if len(results) == 0 or len(results[0].boxes) == 0:
-	    return None, None  #no detection
+		emit("send_results", [0, 4])
 
 	#extract classes
 	classes_dict = results[0].names #dictionary following idx:class_name
@@ -48,7 +48,9 @@ def classify_pose(message):
 	highest_conf = float(confidence_scores[max_idx])
 	highest_class_name = classes_dict[highest_class_idx]
 
-	emit("send_results", [highest_conf, highest_class_name])
+	print(highest_class_idx, highest_class_name)
+
+	emit("send_results", [float(highest_conf), highest_class_idx])
 
 if __name__ == "__main__":
     socketio.run(app, host="0.0.0.0", port=5000)
