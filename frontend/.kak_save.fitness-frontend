@@ -4,3 +4,5 @@ node_modules/simple-vue-camera/dist/components/Camera.vue.d.ts
 src/WebSocket.ts
 src/router/index.ts
 vite.config.ts
+src/Music.vue
+tsconfig.json

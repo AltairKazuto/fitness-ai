@@ -1,9 +1,10 @@
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, reactive, onMounted, onUnmounted } from 'vue'
 import { io, Socket } from 'socket.io-client' // Import the specific 'io' function
 
 export function useSocketIO(url: string) {
   const socket = ref<Socket | null>(null)
   const data = ref<string | null>(null)
+  const results = ref([])
   const status = ref('DISCONNECTED')
 
   const connect = () => {
@@ -26,8 +27,13 @@ export function useSocketIO(url: string) {
       console.error('Socket.IO error:', err)
     })
 
-    socket.value.on('send_conf', (message: string) => {
-      console.log('confidence', message)
+    socket.value.on('send_results', (message: any) => {
+      results.value = message
+      console.log('results', message)
+    })
+
+    socket.value.on('send_beats', (message: string) => {
+      console.log('beats: ', message)
     })
   }
 
@@ -47,5 +53,5 @@ export function useSocketIO(url: string) {
   onUnmounted(close)
 
   // Expose the sendEvent function
-  return { socket, data, status, sendEvent, close, connect }
+  return { socket, data, results, status, sendEvent, close, connect }
 }

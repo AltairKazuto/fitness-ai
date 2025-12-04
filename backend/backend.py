@@ -4,17 +4,51 @@ from ultralytics import YOLO
 import cv2
 import base64
 import time
+import numpy as np
+from beat_detection import simple
+from PIL import Image
+from io import BytesIO
 
 app = Flask(__name__)
-socketio = SocketIO(app, cors_allowed_origins="*")
+socketio = SocketIO(app, cors_allowed_origins="*", max_http_buffer_size=1e8)
 
 model = YOLO('yoga_pose_classifier_v4/weights/best.pt')
-results = model('Goddess-Pose-for-Pose-Page-e1574893769111.jpeg', conf=0.5, save=False, show=True)
 
-# @socketio.on("send_image")
+@socketio.on("request_beats")
+def request_beats(message):
+    # print(message['path'])
+    emit("send_beats", simple.get_beats(message['path']))
+
 # def generate_frames(message):
-# 	results = model('Goddess-Pose-for-Pose-Page-e1574893769111.jpeg', conf=0.5, save=False, show=False)
-# 	emit("send_conf", str(results[0].keypoints))
+	# img_pil = Image.open(BytesIO(message['message'])).convert("RGB")
+	# img_np = np.array(img_pil)
+# 	results = model(img_np, conf=0.5, save=False, show=False)
+# 	emit("send_results", str(results[0].keypoints))
+
+@socketio.on("send_image")
+def classify_pose(message):
+    #results is a list of Result objects
+	img_pil = Image.open(BytesIO(message['message'])).convert("RGB")
+	img_np = np.array(img_pil)
+	results = model(img_np,verbose=False,show=False) #repress print, showing
+
+
+	if len(results) == 0 or len(results[0].boxes) == 0:
+	    return None, None  #no detection
+
+	#extract classes
+	classes_dict = results[0].names #dictionary following idx:class_name
+	#extract class prediction for bounding box
+	predicted_classes = results[0].boxes.cls.cpu().numpy() #convert tensor to numpy
+	confidence_scores = results[0].boxes.conf.cpu().numpy()
+	#get only the highest prediction: forces 1-person detection at a time
+	#u can change this
+	max_idx = np.argmax(confidence_scores)
+	highest_class_idx = int(predicted_classes[max_idx])
+	highest_conf = float(confidence_scores[max_idx])
+	highest_class_name = classes_dict[highest_class_idx]
+
+	emit("send_results", [highest_conf, highest_class_name])
 
 if __name__ == "__main__":
     socketio.run(app, host="0.0.0.0", port=5000)
