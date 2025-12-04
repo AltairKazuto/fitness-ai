@@ -2,6 +2,7 @@ import psycopg2
 from psycopg2 import sql
 from psycopg2 import extras
 import time
+from datetime import date
 import bcrypt
 
 
@@ -110,25 +111,72 @@ class DBConnector:
             return False
         
     def login(self, username, pw):
+        """
+        Authenticates a user and automatically creates a daily log with a goal.
+        Goal starts at 1000 for the first log, then increases by 500 for each new day.
+        """
         query = "SELECT * FROM users WHERE username = %s"
-        try:
-            user = self.execute_query(query, (username,), fetch_one=True)
-            if user:
-                stored_hash = user['password'].encode('utf-8')
-                if bcrypt.checkpw(pw.encode('utf-8'), stored_hash):
-                    print(f"Login successful for user '{username}'!")
-                    return user  # Return the full user info as dict
-                else:
-                    print("Login failed: Incorrect password.")
-                    return None
+        user = self.execute_query(query, (username,), fetch_one=True)
+        
+        if user:
+            stored_hash = user['password'].encode('utf-8')
+            if bcrypt.checkpw(pw.encode('utf-8'), stored_hash):
+                print(f"Login successful for user '{username}'!")
+                
+                today = date.today()
+                log_check_query = """
+                    SELECT * FROM daily_logs WHERE user_id = %s AND log_date = %s
+                """
+                log = self.execute_query(log_check_query, (user['user_id'], today), fetch_one=True)
+                
+                if not log:
+                    # Get last goal_points
+                    last_log_query = """
+                        SELECT goal_points FROM daily_logs
+                        WHERE user_id = %s
+                        ORDER BY log_date DESC
+                        LIMIT 1
+                    """
+                    last_log = self.execute_query(last_log_query, (user['user_id'],), fetch_one=True)
+
+                    if last_log:
+                        new_goal = last_log['goal_points'] + 500
+                    else:
+                        new_goal = 1000
+
+                    # Insert new daily log
+                    insert_log_query = """
+                        INSERT INTO daily_logs 
+                        (user_id, log_date, goal_points, earned_points, is_goal_met)
+                        VALUES (%s, %s, %s, %s, %s)
+                        RETURNING id, user_id, log_date, goal_points, earned_points, is_goal_met
+                    """
+                    new_log = self.execute_query(
+                        insert_log_query,
+                        (user['user_id'], today, new_goal, 0, False),
+                        fetch_one=True
+                    )
+                    print("Created new daily log for today:", new_log)
+
+                return user
             else:
-                print("Login failed: Username not found.")
+                print("Login failed: Incorrect password.")
                 return None
-        except psycopg2.Error as e:
-            if self.connection:
-                self.connection.rollback()
-            print(f"Login failed: {e}")
+        else:
+            print("Login failed: Username not found.")
             return None
+        
+    def add_points(self, username, points):
+        """
+        Adding points
+        """
+        query = "SELECT * FROM users WHERE username = %s"
+        user = self.execute_query(query, (username,), fetch_one=True)
+
+        if user:
+            new_cmd = "UPDATE daily_logs SET earned_points = %s WHERE user_id = %s AND log_date = %s"
+            update = self.execute_query(new_cmd, (points, user["user_id"], date.today()), fetch_one=True)
+            print("updated:", update)
         
     
 if __name__ == '__main__':
@@ -143,20 +191,11 @@ if __name__ == '__main__':
     
     db = DBConnector()
     if db.connect():
-        # db.connect()
-        
-        # Example of inserting data
-        # insert_query = "INSERT INTO users (user_id, username, password) VALUES (%s, %s, %s)"
-        # db.execute_query(insert_query, (1, 'yesss', 'fffsdfsdf'))
-        # print("Data inserted.")
-        
-        # # Example of querying data
-        # select_query = "SELECT * FROM users WHERE user_id = %s"
-        # data = db.execute_query(select_query, (1,), fetch_all=True)
-        # print("Fetched Data:", data)
+
 
         print(db.signup("macncheese2", "passpass"))
         print(db.login("macncheese2", "passpass"))
-        print(db.login("macncheese", "passpass"))
+        the_user = db.login("macncheese", "passpass")
+        db.add_points(the_user["username"], 230)
         
         db.close()
