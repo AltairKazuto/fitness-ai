@@ -11,6 +11,7 @@ const currentPrediction = ref<string | undefined>('')
 const timer = ref(0)
 const prevTimer = ref<number>(0)
 const beatShow = ref('')
+const poses = ['goddess pose', 'plank pose', 'warrior2 pose', 'last pose']
 
 const incrementTimer = () => {
   if (beatsObject.beats[0]) {
@@ -52,6 +53,16 @@ watch(results, (newVal: Array<string>, oldVal) => {
   currentPrediction.value = newVal[0]
 })
 
+const incomingBeats = computed(() => {
+  let incoming: Array<Array<number>> = []
+  beatsObject.beats.forEach((beat, index: number) => {
+    if (beat - timer.value < 3) {
+      incoming.push([beat, beatsObject.pose[index]!])
+    }
+  })
+  return incoming
+})
+
 const beatDetected = computed(() => {
   if (beatsObject.beats[0]) {
     if (timer.value > beatsObject.beats[0]) {
@@ -65,12 +76,9 @@ const beatDetected = computed(() => {
 
 watch(beatDetected, (newVal, oldVal) => {
   if (newVal) {
-    if (timer.value - prevTimer.value > 2) {
-      beatShow.value += 'a'
-      prevTimer.value = beatsObject.beats.shift()!
-    } else {
-      beatsObject.beats.shift()!
-    }
+    beatShow.value += 'a'
+    prevTimer.value = beatsObject.beats.shift()!
+    beatsObject.pose.shift()
     console.log(timer.value, prevTimer.value)
   }
 })
@@ -98,6 +106,18 @@ watch(
 
 <template>
   <audio ref="audio_ref"></audio>
+  <div v-for="beat in incomingBeats">
+    <p
+      :style="{
+        position: 'absolute',
+        top: '50%',
+        left: '50%',
+        'margin-left': (beat[0]! - timer) * 500 + 'px',
+      }"
+    >
+      {{ poses[beat[1]!] }}
+    </p>
+  </div>
 
   <div class="camera-container">
     <camera
@@ -118,8 +138,10 @@ watch(
   <input type="file" accept="audio/*" @change="handleFileChange" />
   <p>Class: {{ results[1] }}</p>
   <p>Confidence: {{ results[0] }}</p>
-  <p>BeatDetect: {{ beatShow }}</p>
-
+  <!--  <p :style="{ top: '50%', left: '50%', 'margin-left': timer * 100 + 'px' }">
+    BeatDetect: {{ beatShow }}
+  </p>
+-->
   <button @click="snapshot">snapshot</button>
   <button @click="request_beats">Request Beats</button>
   <img :src="url" />

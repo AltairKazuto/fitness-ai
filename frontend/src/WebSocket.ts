@@ -7,6 +7,7 @@ export function useSocketIO(url: string) {
   const results = ref([])
   const beatsObject = reactive({
     beats: [0],
+    pose: [0],
     ready: false,
   })
   const beats = ref('')
@@ -38,9 +39,21 @@ export function useSocketIO(url: string) {
     })
 
     socket.value.on('send_beats', (message: any) => {
-      beatsObject.beats = message
+      let prev = message.shift()
+      let processed_beats: Array<number> = [prev]
+      let poses: Array<number> = []
+      message.forEach((beat: number, index: number) => {
+        if (beat - prev > 2) {
+          processed_beats.push(beat)
+          poses.push(Math.floor(Math.random() * 4))
+          prev = beat
+        }
+      })
+      beatsObject.beats = processed_beats
+      beatsObject.pose = poses
       beatsObject.ready = true
-      console.log('beats: ', message)
+      console.log('beats: ', processed_beats)
+      console.log('poses: ', poses)
     })
   }
 
