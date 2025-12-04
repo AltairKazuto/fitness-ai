@@ -1,0 +1,6 @@
+src/App.vue
+node_modules/simple-vue-camera/dist/index.d.ts
+node_modules/simple-vue-camera/dist/components/Camera.vue.d.ts
+src/WebSocket.ts
+src/router/index.ts
+vite.config.ts
