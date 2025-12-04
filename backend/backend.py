@@ -49,7 +49,7 @@ def register(message):
 
 @socketio.on("add_points")
 def add_points(message):
-    print('b')
+    print(message)
     db.add_points(message['id'], message['add'])
 
 @socketio.on("get_logs")

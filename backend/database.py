@@ -231,7 +231,7 @@ class DBConnector:
         # user = self.execute_query(query, (username,), fetch_one=True)
 
         new_cmd = "UPDATE daily_logs SET earned_points = %s WHERE user_id = %s AND log_date = %s"
-        update = self.execute_query(new_cmd, (current_score['earned_points'] + points, id, date.today()), fetch_one=True)
+        update = self.execute_query(new_cmd, (int(current_score['earned_points']) + int(points), id, date.today()), fetch_one=True)
         print("updated:", update)
 
     def get_all_daily_logs(self):

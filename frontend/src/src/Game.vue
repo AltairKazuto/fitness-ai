@@ -2,6 +2,7 @@
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useSocketIO } from '../WebSocket'
 import Camera from 'simple-vue-camera'
+import useAuth from '../auth'
 
 const { data, status, results, beatsObject, sendEvent } = useSocketIO('http://localhost:5000') // Use http or https here for Socket.IO
 const camera_ref = ref<InstanceType<typeof Camera>>()
@@ -15,8 +16,9 @@ const score = ref(0)
 const added = ref(0)
 const accuracy = ref('')
 const targetBarLit = ref(false); 
-
-
+const { state } = useAuth()
+const props = defineProps(['results', 'beatsObject', 'dailyLogs'])
+const emits = defineEmits(['event'])
 
 const incrementTimer = () => {
   if (beatsObject.beats[0]) {
@@ -40,6 +42,14 @@ const snapshot = async () => {
 const request_beats = (song: any) => {
   sendEvent('request_beats', {
     path: song,
+  })
+}
+
+const addScore = () => {
+  console.log('adding')
+  emits('event', 'add_points', {
+    id: state.user,
+    add: added.value,
   })
 }
 
@@ -67,6 +77,7 @@ const incomingBeats = computed(() => {
 const beatDetected = computed(() => {
   if (beatsObject.beats[0]) {
     if (timer.value > beatsObject.beats[0]) {
+      addScore()
       return true
     } else {
       return false
@@ -130,9 +141,17 @@ watch(
 
 <template>
     <div class="min-h-screen bg-gray-900 text-white flex flex-col items-center p-4 relative">
-  <div style="position: absolute; right: 50px">
+  <!-- <div style="position: absolute; right: 50px">
     <h1>Score: {{ score }} + {{ added }}</h1>
-  </div>
+  </div> -->
+
+  <header class="w-full max-w-7xl flex justify-between items-start py-4 z-20">
+            <div class="flex flex-col items-start bg-gray-800/70 p-3 rounded-xl shadow-lg border border-teal-500/50">
+                <h1 class="text-3xl font-extrabold text-white">SCORE: {{ score }}</h1>
+                  <h1 v-if="targetBarLit" class="floating-score">  +{{ added }}
+</h1>  
+            </div>
+  </header>
 
   <audio ref="audio_ref"></audio>
   
@@ -228,6 +247,17 @@ watch(
   animation: neon-pulse 0.3s ease-in-out;
 }
 
+.score-pop-enter-active, .score-pop-leave-active {
+    transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1); /* Ease-out-expo */
+}
+.score-pop-enter-from, .score-pop-leave-to {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.8);
+}
+.score-pop-enter-to {
+    transform: translateY(0) scale(1.1);
+}
+
 @keyframes neon-pulse {
   0% { box-shadow: 0 0 5px #02fff2, 0 0 10px #02fff2, 0 0 20px #02fff2; }
   50% { box-shadow: 0 0 30px #02fff2, 0 0 60px #02fff2, 0 0 120px #02fff2; }
@@ -236,8 +266,21 @@ watch(
 
 .floating-accuracy {
   position: absolute;
-  top: 30%;
-  left: 80%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #0ff;
+  font-weight: bold;
+  font-size: 60px;
+  text-shadow: 0 0 5px #0ff, 0 0 10px #0ff, 0 0 20px #0ff;
+  animation: floatFade 0.8s ease-out forwards;
+}
+
+
+.floating-score {
+  position: absolute;
+  top:10%;
+  left: 30%;
   transform: translate(-50%, -50%);
   color: #0ff;
   font-weight: bold;
