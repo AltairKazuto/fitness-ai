@@ -158,7 +158,7 @@ class DBConnector:
                     )
                     print("Created new daily log for today:", new_log)
 
-                return user
+                return user['user_id']
             else:
                 print("Login failed: Incorrect password.")
                 return None
@@ -166,17 +166,17 @@ class DBConnector:
             print("Login failed: Username not found.")
             return None
         
-    def add_points(self, username, points):
+    def add_points(self, id, points):
         """
         Adding points
         """
-        query = "SELECT * FROM users WHERE username = %s"
-        user = self.execute_query(query, (username,), fetch_one=True)
+        query = "SELECT earned_points FROM daily_logs WHERE user_id = %s"
+        current_score = self.execute_query(query, (id,), fetch_one=True)
+        # user = self.execute_query(query, (username,), fetch_one=True)
 
-        if user:
-            new_cmd = "UPDATE daily_logs SET earned_points = %s WHERE user_id = %s AND log_date = %s"
-            update = self.execute_query(new_cmd, (points, user["user_id"], date.today()), fetch_one=True)
-            print("updated:", update)
+        new_cmd = "UPDATE daily_logs SET earned_points = %s WHERE user_id = %s AND log_date = %s"
+        update = self.execute_query(new_cmd, (current_score['earned_points'] + points, id, date.today()), fetch_one=True)
+        print("updated:", update)
         
     
 if __name__ == '__main__':
@@ -196,6 +196,6 @@ if __name__ == '__main__':
         print(db.signup("macncheese2", "passpass"))
         print(db.login("macncheese2", "passpass"))
         the_user = db.login("macncheese", "passpass")
-        db.add_points(the_user["username"], 230)
+        db.add_points(the_user, 230)
         
         db.close()
