@@ -44,6 +44,40 @@ class DBConnector:
             self.connection.close()
             print("PostgreSQL connection closed.")
 
+    def init_db(self):
+        """
+        Initializes the database tables and constraints.
+        Should be run once at app startup.
+        """
+        # Users table
+        create_users_table = """
+        CREATE TABLE IF NOT EXISTS users (
+            user_id SERIAL PRIMARY KEY,
+            username TEXT UNIQUE NOT NULL,
+            password TEXT NOT NULL,
+            UNIQUE(username)
+        );
+        """
+
+        # Daily logs table
+        create_daily_logs_table = """
+        CREATE TABLE IF NOT EXISTS daily_logs (
+            id SERIAL PRIMARY KEY,
+            user_id INT REFERENCES users(user_id),
+            log_date DATE NOT NULL,
+            goal_points INT NOT NULL,
+            earned_points INT NOT NULL DEFAULT 0,
+            is_goal_met BOOLEAN NOT NULL DEFAULT FALSE,
+            UNIQUE(user_id, log_date)
+        );
+        """
+
+        # Execute table creation queries
+        self.execute_query(create_users_table)
+        self.execute_query(create_daily_logs_table)
+
+        print("Database initialization complete.")
+
     def execute_query(self, query, params=None, fetch_one=False, fetch_all=False):
         """
         :param query: The SQL query string (should use %s placeholders).
@@ -191,7 +225,7 @@ if __name__ == '__main__':
     
     db = DBConnector()
     if db.connect():
-
+        db.init_db() # initialize database if new app
 
         print(db.signup("macncheese2", "passpass"))
         print(db.login("macncheese2", "passpass"))
