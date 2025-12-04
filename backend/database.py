@@ -6,15 +6,21 @@ from datetime import date
 import bcrypt
 
 
+
 # still being fixed
 DB_CONFIG = {
     "host": "db.aeraqhjqallyybuttqpg.supabase.co",
     "database": "postgres",
     "user": "postgres",
     "password": "CS176_fitness176",
-    "port": 5433
+    "port": 5432
 }
 
+DB_CONFIG['host'] = 'localhost' 
+DB_CONFIG['user'] = 'postgres'
+DB_CONFIG['password'] = 'shaira'
+DB_CONFIG['port'] = 5433
+DB_CONFIG['database'] = 'workout_tracker1'
 
 class DBConnector:
     def __init__(self):
@@ -229,25 +235,34 @@ class DBConnector:
         new_cmd = "UPDATE daily_logs SET earned_points = %s WHERE user_id = %s AND log_date = %s"
         update = self.execute_query(new_cmd, (current_score['earned_points'] + points, id, date.today()), fetch_one=True)
         print("updated:", update)
+
+    def get_all_daily_logs(self):
+        query = "SELECT * FROM daily_logs"
+        return self.execute_query(query, fetch_all=True)
+    
+    def get_daily_logs_by_user(self, user_id: int):
+        query = "SELECT * FROM daily_logs WHERE user_id = %s"
+        return self.execute_query(query, (user_id,), fetch_all=True)
         
     
-if __name__ == '__main__':
+# if __name__ == '__main__':
 
-    # edit accordingly
-    # this is just to test
-    DB_CONFIG['host'] = 'localhost' 
-    DB_CONFIG['user'] = 'postgres'
-    DB_CONFIG['password'] = 'shaira'
-    DB_CONFIG['port'] = 5433
-    DB_CONFIG['database'] = 'workout_tracker1'
+#     # edit accordingly
+#     # this is just to test
+#     DB_CONFIG['host'] = 'localhost' 
+#     DB_CONFIG['user'] = 'postgres'
+#     DB_CONFIG['password'] = 'shaira'
+#     DB_CONFIG['port'] = 5433
+#     DB_CONFIG['database'] = 'workout_tracker1'
     
-    db = DBConnector()
-    db.create_database_if_not_exists(DB_CONFIG['database'], DB_CONFIG['user'], DB_CONFIG['password'])
-    if db.connect():
-        db.init_db() # initialize database if new app
+#     db = DBConnector()
+#     db.create_database_if_not_exists(DB_CONFIG['database'], DB_CONFIG['user'], DB_CONFIG['password'])
+#     if db.connect():
+#         db.init_db() # initialize database if new app
 
-        print(db.signup("macncheese2", "passpass"))
-        the_user = db.login("macncheese2", "passpass")
-        db.add_points(the_user, 230)
+#         print(db.signup("macncheese2", "passpass"))
+#         the_user = db.login("macncheese2", "passpass")
+#         db.add_points(the_user, 230)
         
-        db.close()
+#         db.close()
+

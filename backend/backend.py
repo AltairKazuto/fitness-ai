@@ -8,11 +8,13 @@ import numpy as np
 from beat_detection import simple
 from PIL import Image
 from io import BytesIO
+import os
 
+weights_path = os.path.join(os.getcwd(), "yoga_pose_classifier_v4", "weights", "best.pt")
 app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins="*", max_http_buffer_size=1e8)
 
-model = YOLO('yoga_pose_classifier_v4/weights/best.pt')
+model = YOLO(weights_path)
 
 @socketio.on("request_beats")
 def request_beats(message):
