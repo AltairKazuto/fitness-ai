@@ -17,7 +17,7 @@ model = YOLO('yoga_pose_classifier_v4/weights/best.pt')
 @socketio.on("request_beats")
 def request_beats(message):
     # print(message['path'])
-    emit("send_beats", simple.get_beats(message['path']))
+    emit("send_beats", simple.get_beats(message['path']).tolist())
 
 # def generate_frames(message):
 	# img_pil = Image.open(BytesIO(message['message'])).convert("RGB")

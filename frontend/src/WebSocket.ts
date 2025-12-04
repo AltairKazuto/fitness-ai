@@ -5,6 +5,11 @@ export function useSocketIO(url: string) {
   const socket = ref<Socket | null>(null)
   const data = ref<string | null>(null)
   const results = ref([])
+  const beatsObject = reactive({
+    beats: [0],
+    ready: false,
+  })
+  const beats = ref('')
   const status = ref('DISCONNECTED')
 
   const connect = () => {
@@ -32,7 +37,9 @@ export function useSocketIO(url: string) {
       console.log('results', message)
     })
 
-    socket.value.on('send_beats', (message: string) => {
+    socket.value.on('send_beats', (message: any) => {
+      beatsObject.beats = message
+      beatsObject.ready = true
       console.log('beats: ', message)
     })
   }
@@ -53,5 +60,5 @@ export function useSocketIO(url: string) {
   onUnmounted(close)
 
   // Expose the sendEvent function
-  return { socket, data, results, status, sendEvent, close, connect }
+  return { socket, data, results, beatsObject, status, sendEvent, close, connect }
 }
