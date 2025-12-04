@@ -20,6 +20,24 @@ class DBConnector:
     def __init__(self):
         self.connection = None
 
+    def create_database_if_not_exists(self, dbname, user, password, host='localhost', port=5433):
+        conn = psycopg2.connect(dbname='postgres', user=user, password=password, host=host, port=port)
+        conn.autocommit = True  # Needed to create databases
+        cur = conn.cursor()
+        
+        # Check if database exists
+        cur.execute("SELECT 1 FROM pg_database WHERE datname = %s", (dbname,))
+        exists = cur.fetchone()
+        
+        if not exists:
+            cur.execute(f"CREATE DATABASE {dbname}")
+            print(f"Database '{dbname}' created.")
+        else:
+            print(f"Database '{dbname}' already exists.")
+        
+        cur.close()
+        conn.close()
+
     def connect(self, max_retries=5):
         for attempt in range(max_retries):
             try:
@@ -221,15 +239,15 @@ if __name__ == '__main__':
     DB_CONFIG['user'] = 'postgres'
     DB_CONFIG['password'] = 'shaira'
     DB_CONFIG['port'] = 5433
-    DB_CONFIG['database'] = 'workout_tracker'
+    DB_CONFIG['database'] = 'workout_tracker1'
     
     db = DBConnector()
+    db.create_database_if_not_exists(DB_CONFIG['database'], DB_CONFIG['user'], DB_CONFIG['password'])
     if db.connect():
         db.init_db() # initialize database if new app
 
         print(db.signup("macncheese2", "passpass"))
-        print(db.login("macncheese2", "passpass"))
-        the_user = db.login("macncheese", "passpass")
+        the_user = db.login("macncheese2", "passpass")
         db.add_points(the_user, 230)
         
         db.close()
