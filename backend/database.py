@@ -226,8 +226,8 @@ class DBConnector:
         """
         Adding points
         """
-        query = "SELECT earned_points FROM daily_logs WHERE user_id = %s"
-        current_score = self.execute_query(query, (id,), fetch_one=True)
+        query = "SELECT earned_points FROM daily_logs WHERE user_id = %s AND log_date = %s"
+        current_score = self.execute_query(query, (id,date.today()), fetch_one=True)
         # user = self.execute_query(query, (username,), fetch_one=True)
 
         new_cmd = "UPDATE daily_logs SET earned_points = %s WHERE user_id = %s AND log_date = %s"
@@ -239,7 +239,7 @@ class DBConnector:
         return self.execute_query(query, fetch_all=True)
     
     def get_daily_logs_by_user(self, user_id: int):
-        query = "SELECT * FROM daily_logs WHERE user_id = %s"
+        query = "SELECT * FROM daily_logs WHERE user_id = %s ORDER BY log_date DESC"
         return self.execute_query(query, (user_id,), fetch_all=True)
 
     def get_user_info(self, user_id: int):

@@ -12,7 +12,7 @@ const selectedSong = ref<File | undefined | null>()
 const currentPrediction = ref<number | undefined>()
 const timer = ref(0)
 const prevTimer = ref<number>(0)
-const poses = ['goddess pose', 'plank pose', 'tree pose', 'warrior2 pose']
+const poses = ['goddess_pose.svg', 'plank_pose.svg', 'tree_pose.svg', 'warrior2_pose.svg']
 const score = ref(0)
 const added = ref(0)
 const accuracy = ref('')
@@ -190,7 +190,20 @@ watch(
       <h1 v-if="targetBarLit" class="floating-accuracy">{{ accuracy }}</h1>
 
       <div v-for="beat in incomingBeats" :key="beat[0]">
-        <p
+        <img
+          v-if="beatsObject.beats.length != 1"
+          class="text-4xl w-80"
+          :style="{
+            position: 'absolute',
+            top: '80%',
+            left: `${1280 / 2 + (beat[0]! - timer) * 500}px`,
+            transform: 'translate(-50%, -50%)',
+            color: 'blue',
+            fontWeight: 'bold',
+          }"
+          :src="poses[beat[1]!]"
+        />
+        <!--        <p
           class="text-4xl"
           :style="{
             position: 'absolute',
@@ -201,8 +214,10 @@ watch(
             fontWeight: 'bold',
           }"
         >
+        
           {{ poses[beat[1]!] }}
         </p>
+-->
       </div>
     </div>
     <!-- <input type="file" accept="audio/*" @change="handleFileChange" />
