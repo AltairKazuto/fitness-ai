@@ -12,8 +12,8 @@ DB_CONFIG = {
     "host": "localhost",
     "database": "workout_tracker1",
     "user": "postgres",
-    "password": "shaira",
-    "port": 5433
+    "password": "postgres",
+    "port": 5432
 }
 
 

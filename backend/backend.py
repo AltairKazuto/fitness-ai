@@ -21,13 +21,13 @@ DB = {
     "host": "localhost",
     "database": "workout_tracker1",
     "user": "postgres",
-    "password": "shaira",
-    "port": 5433
+    "password": "postgres",
+    "port": 5432
 }
 DB['host'] = 'localhost' 
 DB['user'] = 'postgres'
-DB['password'] = 'shaira'
-DB['port'] = 5433
+DB['password'] = 'postgres'
+DB['port'] = 5432
 DB['database'] = 'workout_tracker1'
 
 db = database.DBConnector()

@@ -93,9 +93,9 @@ export function useSocketIO(url: string) {
           prev = beat
         }
       })
+      beatsObject.ready = true
       beatsObject.beats = processed_beats
       beatsObject.pose = poses
-      beatsObject.ready = true
       console.log('beats: ', processed_beats)
       console.log('poses: ', poses)
     })
