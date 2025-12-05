@@ -11,6 +11,21 @@ import database
 from PIL import Image
 from io import BytesIO
 import os
+from pydantic import BaseModel
+import requests
+from dotenv import load_dotenv
+
+load_dotenv()
+
+DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY")
+DEEPSEEK_URL = "https://api.deepseek.com/v1/chat/completions"
+
+app = FastAPI()
+
+class ChatRequest(BaseModel):
+    message: str
+
+
 
 weights_path = os.path.join(os.getcwd(), "yoga_pose_classifier_v4", "weights", "best.pt")
 app = Flask(__name__)
@@ -112,6 +127,25 @@ def classify_pose(message):
 
 	emit("send_results", [float(highest_conf), highest_class_idx])
 
+@socketio.on("api_call")
+def chat(req: ChatRequest):
+    payload = {
+        "model": "deepseek-chat",
+        "messages": [{"role": "user", "content": req.message}]
+    }
+
+    headers = {
+        "Authorization": f"Bearer {DEEPSEEK_API_KEY}",
+        "Content-Type": "application/json"
+    }
+
+    response = requests.post(DEEPSEEK_URL, json=payload, headers=headers)
+    data = response.json()
+
+    return {
+        "reply": data["choices"][0]["message"]["content"]
+    }
+
 if __name__ == "__main__":
     # if db.connect():
     #     db.init_db() # initialize database if new app
@@ -119,6 +153,5 @@ if __name__ == "__main__":
     #     print(db.signup("macncheese2", "passpass"))
     #     the_user = db.login("macncheese2", "passpass")
     #     db.add_points(the_user, 230)
-        
     #     db.close()
     socketio.run(app, host="0.0.0.0", port=5000)
