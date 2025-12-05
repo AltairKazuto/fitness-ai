@@ -5,7 +5,7 @@ import Camera from 'simple-vue-camera'
 import useAuth from '../auth'
 
 const { state } = useAuth()
-// const { data, status, results, props.beatsObject, sendEvent } = useSocketIO('http://localhost:5000') // Use http or https here for Socket.IO
+const { data, status, results, beatsObject, sendEvent } = useSocketIO('http://localhost:5000') // Use http or https here for Socket.IO
 const camera_ref = ref<InstanceType<typeof Camera>>()
 const audio_ref = ref<HTMLAudioElement | undefined | null>()
 const selectedSong = ref<File | undefined | null>()
@@ -17,11 +17,11 @@ const score = ref(0)
 const added = ref(0)
 const accuracy = ref('')
 const targetBarLit = ref(false)
-const props = defineProps(['results', 'beatsObject', 'dailyLogs'])
-const emits = defineEmits(['event'])
+// const props = defineProps(['results', 'beatsObject', 'dailyLogs'])
+// const emits = defineEmits(['event'])
 
 const incrementTimer = () => {
-  if (props.beatsObject.beats[0]) {
+  if (beatsObject.beats[0]) {
     timer.value += 0.01
   }
 }
@@ -34,22 +34,22 @@ const snapshot = async () => {
   if (blob instanceof Blob) {
     url.value = URL.createObjectURL(blob)
   }
-  emits('event', 'send_image', {
+  sendEvent('send_image', {
     message: blob,
   })
 }
 
 const request_beats = (song: any) => {
-  emits('event', 'request_beats', {
+  sendEvent('request_beats', {
     path: song,
   })
 }
 
 const addScore = () => {
   console.log('adding')
-  emits('event', 'add_points', {
+  sendEvent('add_points', {
     id: state.user,
-    add: added.value,
+    add: score.value,
   })
 }
 
@@ -66,17 +66,17 @@ const handleFileChange = (event: Event) => {
 
 const incomingBeats = computed(() => {
   let incoming: Array<Array<number>> = []
-  props.beatsObject.beats.forEach((beat: number, index: number) => {
+  beatsObject.beats.forEach((beat: number, index: number) => {
     if (beat - timer.value < 3) {
-      incoming.push([beat, props.beatsObject.pose[index]!])
+      incoming.push([beat, beatsObject.pose[index]!])
     }
   })
   return incoming
 })
 
 const beatDetected = computed(() => {
-  if (props.beatsObject.beats[0]) {
-    if (timer.value > props.beatsObject.beats[0]) {
+  if (beatsObject.beats[0]) {
+    if (timer.value > beatsObject.beats[0]) {
       return true
     } else {
       return false
@@ -85,35 +85,32 @@ const beatDetected = computed(() => {
   return false
 })
 
-watch(
-  () => props.results,
-  (newVal: Array<number>, oldVal) => {
-    if (newVal[1] == currentPrediction.value) {
-      added.value = Math.floor(100 * newVal[0]!)
-      if (newVal[0]! > 0.98) {
-        accuracy.value = 'Perfect'
-      } else if (newVal[0]! > 0.9) {
-        accuracy.value = 'Amazing'
-      } else if (newVal[0]! > 0.75) {
-        accuracy.value = 'Nice'
-      } else {
-        accuracy.value = 'Good'
-      }
+watch(results, (newVal: Array<number>, oldVal) => {
+  if (newVal[1] == currentPrediction.value) {
+    added.value = Math.floor(100 * newVal[0]!)
+    if (newVal[0]! > 0.98) {
+      accuracy.value = 'Perfect'
+    } else if (newVal[0]! > 0.9) {
+      accuracy.value = 'Amazing'
+    } else if (newVal[0]! > 0.75) {
+      accuracy.value = 'Nice'
     } else {
-      added.value = 10
-      accuracy.value = 'Miss'
+      accuracy.value = 'Good'
     }
-    targetBarLit.value = true
-    score.value += added.value
-  },
-)
+  } else {
+    added.value = 10
+    accuracy.value = 'Miss'
+  }
+  targetBarLit.value = true
+  score.value += added.value
+})
 
 watch(beatDetected, (newVal, oldVal) => {
   if (newVal) {
     console.log('hadf')
     snapshot()
-    prevTimer.value = props.beatsObject.beats.shift()!
-    currentPrediction.value = props.beatsObject.pose.shift()
+    prevTimer.value = beatsObject.beats.shift()!
+    currentPrediction.value = beatsObject.pose.shift()
 
     setTimeout(() => {
       targetBarLit.value = false
@@ -122,7 +119,7 @@ watch(beatDetected, (newVal, oldVal) => {
 })
 
 watch(
-  () => props.beatsObject.ready,
+  () => beatsObject.ready,
   (newVal, oldVal) => {
     if (newVal) {
       const reader = new FileReader()
@@ -132,7 +129,7 @@ watch(
           audio_ref.value.play()
           timer.value = 0
         }
-        props.beatsObject.ready = false
+        beatsObject.ready = false
       }
       if (selectedSong.value) {
         reader.readAsDataURL(selectedSong.value)
@@ -194,6 +191,7 @@ watch(
 
       <div v-for="beat in incomingBeats" :key="beat[0]">
         <p
+          class="text-4xl"
           :style="{
             position: 'absolute',
             top: '90%',
@@ -250,6 +248,8 @@ watch(
   height: 720px;
   border: 2px solid black;
   position: relative;
+  border-radius: 20px;
+  overflow: hidden;
 }
 .camera-container video {
   width: 100%;
