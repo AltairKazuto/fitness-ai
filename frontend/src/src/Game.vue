@@ -151,6 +151,11 @@ watch(
                 <h1 class="text-3xl font-extrabold text-white">SCORE: {{ score }}</h1>
                   <h1 v-if="targetBarLit" class="floating-score">  +{{ added }}</h1>  
             </div>
+
+            <RouterLink to="/dashboard"><button @click="state.authenticated = true" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg transition duration-200">
+                    Back to dashboard
+                </button></RouterLink>
+
   </header>
 
   <audio ref="audio_ref"></audio>

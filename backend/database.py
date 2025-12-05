@@ -241,6 +241,10 @@ class DBConnector:
     def get_daily_logs_by_user(self, user_id: int):
         query = "SELECT * FROM daily_logs WHERE user_id = %s"
         return self.execute_query(query, (user_id,), fetch_all=True)
+
+    def get_user_info(self, user_id: int):
+        query = "SELECT * FROM users WHERE user_id = %s"
+        return self.execute_query(query, (user_id,), fetch_all=True)
         
     
 

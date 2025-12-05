@@ -17,7 +17,7 @@ const score = ref(0)
 const added = ref(0)
 const accuracy = ref('')
 
-const props = defineProps(['results', 'beatsObject', 'dailyLogs'])
+const props = defineProps(['results', 'beatsObject', 'dailyLogs', 'userInfo'])
 const emits = defineEmits(['event'])
 
 const incrementTimer = () => {

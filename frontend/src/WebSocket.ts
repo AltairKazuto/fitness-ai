@@ -14,7 +14,14 @@ export function useSocketIO(url: string) {
     is_goal_met: boolean
   }
 
+  interface userInfo {
+    user_id: number
+    username: string
+    password: string
+  }
+
   const dailyLogs = ref<DailyLog[]>([])
+  const userInfo = ref<userInfo | null>(null)
   const socket = ref<Socket | null>(null)
   const data = ref<string | null>(null)
   const results = ref([])
@@ -70,6 +77,11 @@ export function useSocketIO(url: string) {
       console.log(dailyLogs.value)
     })
 
+    socket.value.on('send_user', (message: any) => {
+      userInfo.value = message[0]
+      console.log(userInfo.value)
+    })
+
     socket.value.on('send_beats', (message: any) => {
       let prev = message.shift()
       let processed_beats: Array<number> = [prev]
@@ -105,5 +117,5 @@ export function useSocketIO(url: string) {
   onUnmounted(close)
 
   // Expose the sendEvent function
-  return { socket, data, dailyLogs, results, beatsObject, status, sendEvent, close, connect }
+  return { socket, data, dailyLogs, results, beatsObject, userInfo, status, sendEvent, close, connect }
 }

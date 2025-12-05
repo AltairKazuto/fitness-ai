@@ -61,6 +61,14 @@ def add_points(message):
 
     emit('send_logs', logs)
 
+@socketio.on("get_user_info")
+def add_points(message):
+    print('here')
+    logs = db.get_user_info(message['id'])
+    print(logs)
+
+    emit('send_user', logs)
+
 @socketio.on("get_earned")
 def get_earned(message):
     query = " b"
