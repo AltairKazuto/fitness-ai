@@ -4,6 +4,8 @@ import { useSocketIO } from '../WebSocket'
 import Camera from 'simple-vue-camera'
 import useAuth from '../auth'
 
+
+const { state } = useAuth()
 const { data, status, results, beatsObject, sendEvent } = useSocketIO('http://localhost:5000') // Use http or https here for Socket.IO
 const camera_ref = ref<InstanceType<typeof Camera>>()
 const audio_ref = ref<HTMLAudioElement | undefined | null>()
@@ -16,7 +18,6 @@ const score = ref(0)
 const added = ref(0)
 const accuracy = ref('')
 const targetBarLit = ref(false); 
-const { state } = useAuth()
 const props = defineProps(['results', 'beatsObject', 'dailyLogs'])
 const emits = defineEmits(['event'])
 
@@ -148,8 +149,7 @@ watch(
   <header class="w-full max-w-7xl flex justify-between items-start py-4 z-20">
             <div class="flex flex-col items-start bg-gray-800/70 p-3 rounded-xl shadow-lg border border-teal-500/50">
                 <h1 class="text-3xl font-extrabold text-white">SCORE: {{ score }}</h1>
-                  <h1 v-if="targetBarLit" class="floating-score">  +{{ added }}
-</h1>  
+                  <h1 v-if="targetBarLit" class="floating-score">  +{{ added }}</h1>  
             </div>
   </header>
 
@@ -196,13 +196,32 @@ watch(
     </p>
   </div>
 </div>
-  <input type="file" accept="audio/*" @change="handleFileChange" />
+  <!-- <input type="file" accept="audio/*" @change="handleFileChange" />
 
 
   <p>Class: {{ results[1] }}</p>
   <p>Confidence: {{ results[0] }}</p>
   <button @click="snapshot">snapshot</button>
-  <button @click="request_beats">Request Beats</button>
+  <button @click="request_beats">Request Beats</button> -->
+
+<div class="flex justify-between items-center w-full max-w-7xl mt-6">
+            <div class="flex items-center space-x-4">
+                <label for="song-upload" class="bg-teal-600 hover:bg-teal-700 text-white font-bold py-2 px-4 rounded-lg cursor-pointer transition duration-200 shadow-md">
+                    Load Song (MP3/WAV)
+                </label>
+                <input id="song-upload" type="file" accept="audio/*" @change="handleFileChange" class="hidden" />
+                <button @click="request_beats" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg transition duration-200" :disabled="!selectedSong">
+                    Re-request Beats
+                </button>
+            </div>
+
+            <div class="text-right text-xs text-gray-400">
+                <p>Class Index: {{ results[1] }} ({{ poses[results[1]!] }})</p>
+                <p>Confidence: <span class="font-mono text-teal-400">{{ results[0]?.toFixed(4) }}</span></p>
+            </div>
+        </div>
+
+
   <!-- <img :src="url" /> -->
    </div>
 </template>
