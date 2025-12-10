@@ -22,7 +22,7 @@ However, if you have postgresql installed in your local machine, you can edit th
     port="5433"
     host="localhost" 
     dbname="workout_tracker" # dont change this
-    is_local="True"  # dont change this
+    is_local="True"  # dont change this. However, if you're going to use the hosted database, change it to "False"
 
 
 ## Usage guide
