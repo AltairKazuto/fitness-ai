@@ -28,6 +28,7 @@ Clone the repo to your local machine
 
 ```
 git clone https://github.com/AltairKazuto/fitness-ai.git
+cd fitness-ai
 ```
 
 To install the required dependencies needed for the project, either run the installation script or manually install.
