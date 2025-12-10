@@ -33,20 +33,21 @@ socketio = SocketIO(app, cors_allowed_origins="*", max_http_buffer_size=1e8)
 
 
 DB = {
-    "host": "localhost",
-    "database": "workout_tracker1",
-    "user": "postgres",
-    "password": "postgres",
-    "port": 5432
+    "host": os.getenv("host"),
+    "database": os.getenv("dbname"),
+    "user": os.getenv("user"),
+    "password": os.getenv("password"),
+    "port": os.getenv("port"),
+    "sslmode":"require"
 }
-DB['host'] = 'localhost' 
-DB['user'] = 'postgres'
-DB['password'] = 'postgres'
-DB['port'] = 5432
-DB['database'] = 'workout_tracker1'
+# DB['host'] = 'localhost' 
+# DB['user'] = 'postgres'
+# DB['password'] = 'postgres'
+# DB['port'] = 5432
+# DB['database'] = 'workout_tracker1'
 
 db = database.DBConnector()
-db.create_database_if_not_exists(DB['database'], DB['user'], DB['password'], DB['port'])
+# db.create_database_if_not_exists(DB['database'], DB['user'], DB['password'], DB['port'])
 db.connect()
 
 model = YOLO('yoga_pose_classifier_v4/weights/best.pt')

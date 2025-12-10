@@ -4,16 +4,26 @@ from psycopg2 import extras
 import time
 from datetime import date
 import bcrypt
+import os
+from dotenv import load_dotenv
 
-
+load_dotenv()
 
 # still being fixed
+# DB_CONFIG = {
+#     "host": "localhost",
+#     "database": "workout_tracker1",
+#     "user": "postgres",
+#     "password": "shaira",
+#     "port": 5433
+# }
+
 DB_CONFIG = {
-    "host": "localhost",
-    "database": "workout_tracker1",
-    "user": "postgres",
-    "password": "postgres",
-    "port": 5432
+    "host": os.getenv("host"),
+    "database": os.getenv("dbname"),
+    "user": os.getenv("user"),
+    "password": os.getenv("password"),
+    "port": os.getenv("port")
 }
 
 
