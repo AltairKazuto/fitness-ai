@@ -29,7 +29,7 @@ However, if you have postgresql installed in your local machine, you can edit th
 
 To run the application. Go the root folder and run `windows_start.bat` if you're using Windows, `linux_start.bat` if you're using Linux/Mac. It should automatically start up the frontend and backend.
 
-![Login Page](github.com)
+![Login Page](https://github.com/AltairKazuto/fitness-ai/blob/master/pictures/Login.png)
 
 Entering the frontend, you will be sent right away to the login and sign up page. First you'll have to sign up if you have no account. And log in if you do. 
 
