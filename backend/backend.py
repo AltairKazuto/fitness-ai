@@ -20,7 +20,7 @@ load_dotenv()
 DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY")
 DEEPSEEK_URL = "https://api.deepseek.com/v1/chat/completions"
 
-app = FastAPI()
+#app = FastAPI()
 
 class ChatRequest(BaseModel):
     message: str

@@ -1,0 +1,13 @@
+flask
+datetime
+flask_socketio
+ultralytics
+opencv-python
+numpy
+Pillow
+pydantic
+requests
+python-dotenv
+librosa
+psycopg2-binary
+bcrypt
