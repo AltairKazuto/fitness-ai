@@ -39,7 +39,7 @@ After logging in, you will be redirected to the dashboard. Everyday, a new exerc
 
 To add points for the day, you'll have to play the game while doing yoga exercises by click "Go to Game". After clicking the button, they will be redirected to the game window
 
-![game_window]([game_window](https://github.com/AltairKazuto/fitness-ai/blob/master/pictures/playgame.png))
+![game_window](https://github.com/AltairKazuto/fitness-ai/blob/master/pictures/playgame.png)
 
 To start the game, the user will have to upload an mp3 or wav file. The application will automatically detect the beats of the song and will synchronize the pose detection accordingly. The number of points added to your score will be depending on the confidence level detected by the model. 
 
