@@ -47,7 +47,10 @@ DB = {
 # DB['database'] = 'workout_tracker1'
 
 db = database.DBConnector()
-# db.create_database_if_not_exists(DB['database'], DB['user'], DB['password'], DB['port'])
+
+if os.getenv("is_local") == "True":
+    db.create_database_if_not_exists(DB['database'], DB['user'], DB['password'], DB['port'])
+    
 db.connect()
 
 model = YOLO('yoga_pose_classifier_v4/weights/best.pt')
