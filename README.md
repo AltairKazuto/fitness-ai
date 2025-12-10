@@ -3,9 +3,9 @@
 **Beat It** is an application in which users can do fun and engaging exercise activities at the comfort of their homes for free. This is a project for *CS 176 (2025-2026 1st Semester)*
 
 **Members:**
-Gabor, Ryv
-Resano, Gabrielle
-Rodriguez, Shaira
+- Gabor, Ryv
+- Resano, Gabrielle
+- Rodriguez, Shaira
 
 # Installation Guide
 
