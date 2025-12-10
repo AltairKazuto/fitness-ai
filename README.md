@@ -35,7 +35,7 @@ Entering the frontend, you will be sent right away to the login and sign up page
 
 After logging in, you will be redirected to the dashboard. Everyday, a new exercise log is added to your account, where each iteration increases by 500 goal points, with an initial of 1000 goal points. The dashboard contains all the exercise logs you did every time you did a new day log in. It indicates if you've achieved you're goal for the specific day.
 
-![Dashboard](github.com)
+![Dashboard](https://github.com/AltairKazuto/fitness-ai/blob/master/pictures/Dashboard.png)
 
 To add points for the day, you'll have to play the game while doing yoga exercises by click "Go to Game". After clicking the button, they will be redirected to the game window
 
