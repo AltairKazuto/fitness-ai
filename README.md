@@ -13,6 +13,7 @@
 - **npm (Node.js)**
 - **Python 3.x**
 - **(Optional) PostgreSQL**
+
   Verify using:
 
 ```
@@ -76,7 +77,7 @@ However, if you have postgresql installed in your local machine, you can edit th
     # from user to host, change it accordingly (.env.example)
     user="postgres"
     password="postgres"
-    port="5433"
+    port="5432"
     host="localhost"
     dbname="workout_tracker" # dont change this
     is_local="True"  # dont change this. However, if you're going to use the hosted database, change it to "False"
