@@ -5,7 +5,8 @@ start "" cmd /k "cd frontend && npm run dev"
 
 REM Start backend in a new window
 echo Starting backend...
-start "" cmd /k "cd backend && python backend.py"
+start "" cmd /k "cd backend && myenv\Scripts\activate"
+python backend.py
 
 echo Both frontend and backend are running.
 pause

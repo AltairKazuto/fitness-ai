@@ -17,16 +17,6 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY")
-DEEPSEEK_URL = "https://api.deepseek.com/v1/chat/completions"
-
-#app = FastAPI()
-
-class ChatRequest(BaseModel):
-    message: str
-
-
-
 weights_path = os.path.join(os.getcwd(), "yoga_pose_classifier_v4", "weights", "best.pt")
 app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins="*", max_http_buffer_size=1e8)
@@ -40,11 +30,6 @@ DB = {
     "port": os.getenv("port"),
     "sslmode":"require"
 }
-# DB['host'] = 'localhost' 
-# DB['user'] = 'postgres'
-# DB['password'] = 'postgres'
-# DB['port'] = 5432
-# DB['database'] = 'workout_tracker1'
 
 db = database.DBConnector()
 
@@ -98,12 +83,6 @@ def request_beats(message):
     # print(message['path'])
     emit("send_beats", simple.get_beats(message['path']).tolist())
 
-# def generate_frames(message):
-	# img_pil = Image.open(BytesIO(message['message'])).convert("RGB")
-	# img_np = np.array(img_pil)
-# 	results = model(img_np, conf=0.5, save=False, show=False)
-# 	emit("send_results", str(results[0].keypoints))
-
 @socketio.on("send_image")
 def classify_pose(message):
     #results is a list of Result objects
@@ -131,31 +110,5 @@ def classify_pose(message):
 
 	emit("send_results", [float(highest_conf), highest_class_idx])
 
-@socketio.on("api_call")
-def chat(req: ChatRequest):
-    payload = {
-        "model": "deepseek-chat",
-        "messages": [{"role": "user", "content": req.message}]
-    }
-
-    headers = {
-        "Authorization": f"Bearer {DEEPSEEK_API_KEY}",
-        "Content-Type": "application/json"
-    }
-
-    response = requests.post(DEEPSEEK_URL, json=payload, headers=headers)
-    data = response.json()
-
-    return {
-        "reply": data["choices"][0]["message"]["content"]
-    }
-
 if __name__ == "__main__":
-    # if db.connect():
-    #     db.init_db() # initialize database if new app
-
-    #     print(db.signup("macncheese2", "passpass"))
-    #     the_user = db.login("macncheese2", "passpass")
-    #     db.add_points(the_user, 230)
-    #     db.close()
-    socketio.run(app, host="0.0.0.0", port=5000)
+    socketio.run(app, host="0.0.0.0", port=5000, allow_unsafe_werkzeug=True)

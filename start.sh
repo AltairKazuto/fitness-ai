@@ -9,7 +9,8 @@ cd ..
 # Go to backend and start backend in background
 echo "Starting backend..."
 cd backend || exit
-python3 backend.py &
+source myenv/bin/activate
+python backend.py &
 
 # Wait for all background processes
 wait

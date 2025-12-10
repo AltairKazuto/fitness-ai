@@ -9,15 +9,6 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# still being fixed
-# DB_CONFIG = {
-#     "host": "localhost",
-#     "database": "workout_tracker1",
-#     "user": "postgres",
-#     "password": "shaira",
-#     "port": 5433
-# }
-
 DB_CONFIG = {
     "host": os.getenv("host"),
     "database": os.getenv("dbname"),
@@ -55,6 +46,7 @@ class DBConnector:
             try:
                 # Use DSN parameters from the configuration dictionary
                 self.connection = psycopg2.connect(**DB_CONFIG)
+                self.init_db()
                 print("Successfully connected to PostgreSQL database.")
                 return True
             except psycopg2.Error as e:
@@ -256,25 +248,3 @@ class DBConnector:
         query = "SELECT * FROM users WHERE user_id = %s"
         return self.execute_query(query, (user_id,), fetch_all=True)
         
-    
-
-# if __name__ == '__main__':
-
-#     # edit accordingly
-#     # this is just to test
-#     DB_CONFIG['host'] = 'localhost' 
-#     DB_CONFIG['user'] = 'postgres'
-#     DB_CONFIG['password'] = 'shaira'
-#     DB_CONFIG['port'] = 5432
-#     DB_CONFIG['database'] = 'workout_tracker1'
-    
-#     db = DBConnector()
-#     db.create_database_if_not_exists(DB_CONFIG['database'], DB_CONFIG['user'], DB_CONFIG['password'], DB_CONFIG['port'])
-#     if db.connect():
-#         db.init_db() # initialize database if new app
-
-#         print(db.signup("macncheese2", "passpass"))
-#         the_user = db.login("macncheese2", "passpass")
-#         db.add_points(the_user, 230)
-        
-#         db.close()

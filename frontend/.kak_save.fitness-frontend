@@ -1,9 +1,0 @@
-src/App.vue
-src/WebSocket.ts
-tsconfig.json
-vite.config.ts
-src/router/index.ts
-src/Game.vue
-src/Dashboard.vue
-index.html
-src/Authentication.vue

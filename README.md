@@ -7,11 +7,55 @@
 - Resano, Gabrielle
 - Rodriguez, Shaira
 
+# Prerequisites
+-  **npm (Node.js)** 
+-  **Python 3.x**
+- **(Optional) PostgreSQL**
+	Verify using:
+```
+npm --version
+python --version
+psql --version
+```
 # Installation Guide
 
-1. Clone the Repo to your local machine
-2. Run `setup.bat` to install all the modules needed for the project (whether front-end or back-end)
-3. Copy the `env.example` in the /backend/ and rename it `.env`, change its configuration according to the file that will be sent separately (for security reasons)
+Clone the repo to your local machine
+```
+git clone https://github.com/AltairKazuto/fitness-ai.git
+```
+
+To install the required dependencies needed for the project, either run the installation script or manually install.
+#### Installation Script
+##### Windows
+```
+// fitness-ai/
+install.bat
+```
+##### Unix (Linux/Mac)
+```
+// fitness-ai/
+./install.sh
+```
+
+#### Manual Install
+
+```
+// fitness-ai/frontend
+npm install
+
+// fitness-ai/backend
+python -m venv myenv
+
+// Windows
+myenv\Scripts\activate
+// Unix
+source myenv/bin/activate
+
+pip install -r requirements.txt
+```
+#### Postgres Initialization
+
+Copy the `env.example` in `fitness-ai/backend` and rename it `.env`, change its configuration according to the file that will be sent separately (for security reasons)
    > postgresql database is currently hosted for free in neon.tech
 
 However, if you have postgresql installed in your local machine, you can edit the configuration in the `.env.example` according to your properties. And then paste it as an `.env`
@@ -24,10 +68,35 @@ However, if you have postgresql installed in your local machine, you can edit th
     dbname="workout_tracker" # dont change this
     is_local="True"  # dont change this. However, if you're going to use the hosted database, change it to "False"
 
-
 ## Usage guide
 
-To run the application, go the root folder and run `windows_start.bat` if you're using Windows, `linux_start.bat` if you're using Linux/Mac. It should automatically start up the frontend and backend.
+To start the application, run the startup script. It should automatically start up both the frontend and backend.
+##### Windows
+```
+// fitness-ai/
+start.bat
+```
+##### Unix (Linux/Mac)
+```
+// fitness-ai/
+chmod +x start.sh
+./start.sh
+```
+
+#### Manual Startup
+```
+// fitness-ai/frontend
+npm run dev
+
+// fitness-ai/backend
+
+// Windows
+myenv\Scripts\activate
+// Unix
+source myenv/bin/activate
+
+python backend.py
+```
 
 ![Login Page](https://github.com/AltairKazuto/fitness-ai/blob/master/pictures/Login.png)
 
@@ -64,6 +133,9 @@ For future work, it is recommended to manually annotate a dataset such that form
 
 2. Model Selection
 - In the current project, pose classification is actually done using YOLO's object detection and not using pose estimation. This is why, despite the improper joint mapping, the trained model was still able to classify the poses correctly. For improved realism and accuracy in pose matching, it is recommended to instead use MediaPipe in future work and create a benchmark model instead of using YOLO.
-3. Miscellaneous Improvements
+3. Beat Detection
+- The current beat detection library used is too sensitive to sounds, other alternatives could be explored
+2. Miscellaneous Improvements
 - Selection of difficulty level.
 - Introduction of multiplayer mode.
+
